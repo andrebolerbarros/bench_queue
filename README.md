@@ -16,7 +16,9 @@ talks to any existing deployment.
   `<script>` tag before publishing.
 - [`cron_prompt_template.txt`](./cron_prompt_template.txt) — the recurring
   sync-tick prompt, with placeholders for your paths/URLs.
-- [`SETUP.md`](./SETUP.md) — full setup walkthrough: prerequisites, the
-  required `todo.md` convention, publishing steps, and known limitations.
+- [`SETUP.md`](./SETUP.md) — prerequisites, the required `todo.md`
+  convention, and known limitations.
+- [`HOWTO.md`](./HOWTO.md) — step-by-step: the actual prompts to give
+  Claude to build and publish this artifact from this repo.
 
-Start with **[SETUP.md](./SETUP.md)**.
+Start with **[HOWTO.md](./HOWTO.md)**.
