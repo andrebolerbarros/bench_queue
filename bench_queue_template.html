@@ -1,0 +1,1113 @@
+<title>Bench Queue Template</title>
+<meta name="description" content="Submit tasks and projects for your team; Claude reviews the queue and merges it into todo.md.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#f5f3ee;
+    --surface:#ffffff;
+    --surface-2:#f0ede4;
+    --ink:#1e2321;
+    --ink-soft:#4d534e;
+    --muted:#7a7d73;
+    --accent:#2f5f8f;
+    --accent-ink:#ffffff;
+    --accent-soft:#e3ecf4;
+    --border:#ddd9cd;
+    --danger:#b3492f;
+    --ok:#2f7a52;
+    --shadow: 0 1px 2px rgba(30,35,33,.06), 0 8px 24px -12px rgba(30,35,33,.18);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#131715;
+      --surface:#1b201d;
+      --surface-2:#20261f;
+      --ink:#eae7dd;
+      --ink-soft:#c2c5b9;
+      --muted:#8a9086;
+      --accent:#79aee0;
+      --accent-ink:#0c1a26;
+      --accent-soft:#1d2c3a;
+      --border:#31382f;
+      --danger:#e2917a;
+      --ok:#6fc4a6;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#131715;
+    --surface:#1b201d;
+    --surface-2:#20261f;
+    --ink:#eae7dd;
+    --ink-soft:#c2c5b9;
+    --muted:#8a9086;
+    --accent:#79aee0;
+    --accent-ink:#0c1a26;
+    --accent-soft:#1d2c3a;
+    --border:#31382f;
+    --danger:#e2917a;
+    --ok:#6fc4a6;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .app{ display:flex; align-items:stretch; min-height:100%; }
+
+  /* ---- sidebar (pane bar) ---- */
+  .sidebar{
+    flex-shrink:0;
+    width:72px;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:2px;
+    padding-block:18px 12px;
+    padding-inline:6px;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+  }
+  .sidebar .brand{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    font-size:12.5px;
+    text-align:center;
+    color:var(--accent);
+    padding-bottom:14px;
+    margin-bottom:8px;
+    border-bottom:1px solid var(--border);
+    line-height:1.25;
+  }
+  .sidebar button{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    background:transparent;
+    color:var(--muted);
+    border:none;
+    border-radius:9px;
+    padding:9px 2px;
+    font-family:inherit;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.01em;
+    cursor:pointer;
+  }
+  .sidebar button .glyph{ font-size:17px; line-height:1; }
+  .sidebar button.active{ background:var(--accent-soft); color:var(--accent); }
+
+  .main{ flex:1; min-width:0; padding:24px 16px 48px; display:flex; flex-direction:column; gap:24px; }
+  .content-wrap{ max-width:720px; width:100%; margin:0 auto; display:flex; flex-direction:column; gap:24px; }
+
+  header{ display:flex; flex-direction:column; gap:6px; }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--accent);
+  }
+  h1{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    font-size:clamp(24px, 5vw, 32px);
+    margin:0;
+    text-wrap:balance;
+    letter-spacing:-.01em;
+  }
+  .sub{ color:var(--ink-soft); font-size:14px; line-height:1.5; max-width:56ch; }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:22px;
+  }
+
+  form{ display:flex; flex-direction:column; gap:16px; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  label{ font-size:12.5px; font-weight:600; color:var(--ink-soft); letter-spacing:.02em; }
+  select, textarea, input[type="text"]{
+    font-family:inherit;
+    font-size:14.5px;
+    color:var(--ink);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:10px 12px;
+    resize:vertical;
+    line-height:1.5;
+  }
+  select{ font-family:'JetBrains Mono', monospace; font-size:13.5px; appearance:none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%; background-size: 5px 5px, 5px 5px; background-repeat:no-repeat; padding-right:36px; }
+  textarea{ min-height:70px; }
+  select:focus, textarea:focus, input:focus{ outline:2px solid var(--accent); outline-offset:1px; background:var(--surface); }
+  .hint{ font-size:12px; color:var(--muted); }
+  .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+  button.btn{
+    font-family:inherit;
+    font-weight:600;
+    font-size:14.5px;
+    border:none;
+    border-radius:9px;
+    padding:11px 18px;
+    cursor:pointer;
+    transition: transform .08s ease, opacity .15s ease;
+  }
+  button.btn:active{ transform: scale(.98); }
+  .primary{ background:var(--accent); color:var(--accent-ink); align-self:flex-start; }
+  .primary:disabled{ opacity:.5; cursor:default; }
+
+  .back-link{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:transparent;
+    border:none;
+    color:var(--ink-soft);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:600;
+    padding:0;
+    cursor:pointer;
+    align-self:flex-start;
+  }
+
+  .status{ font-size:13px; min-height:18px; }
+  .status.ok{ color:var(--ok); }
+  .status.err{ color:var(--danger); }
+
+  .pane-head{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .pane-head h2{ font-family:'Fraunces', Georgia, serif; font-weight:600; font-size:19px; margin:0; }
+  .pane-head-actions{ display:flex; align-items:center; gap:10px; }
+  .count-badge{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); }
+  .add-btn{
+    width:32px; height:32px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--accent); color:var(--accent-ink);
+    border:none; border-radius:9px;
+    font-size:19px; line-height:1;
+    cursor:pointer;
+  }
+
+  ul.list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+  ul.list li{ display:flex; flex-direction:column; gap:6px; padding:14px 0; border-bottom:1px solid var(--border); }
+  ul.list li:last-child{ border-bottom:none; }
+  .meta{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .chip{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    background:var(--accent-soft);
+    color:var(--accent);
+    padding:3px 8px;
+    border-radius:999px;
+    letter-spacing:.01em;
+  }
+  .time{ font-family:'JetBrains Mono', monospace; font-size:11.5px; color:var(--muted); font-variant-numeric: tabular-nums; }
+  .pending{ font-size:11px; color:var(--muted); border:1px solid var(--border); border-radius:999px; padding:2px 7px; }
+  .task-text{ font-size:14.5px; line-height:1.5; }
+  .details-text{ font-size:13.5px; line-height:1.5; color:var(--ink-soft); white-space:pre-wrap; }
+  .empty{ color:var(--muted); font-size:13.5px; padding:6px 0; }
+
+  /* ---- task board (two columns) ---- */
+  .board{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width: 560px){ .board{ grid-template-columns:1fr; } }
+  .board-col{ display:flex; flex-direction:column; gap:10px; min-width:0; }
+  .board-col-head{ display:flex; align-items:center; gap:7px; }
+  .board-col-head h3{ font-size:13px; margin:0; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); }
+  .board-col-head .priority-tag{ margin-left:auto; }
+  .board-card{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .board-card .task-text{ font-size:13.5px; }
+
+  /* ---- projects pane ---- */
+  .proj-board{ display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; }
+  @media (max-width: 820px){ .proj-board{ grid-template-columns:1fr 1fr; } }
+  @media (max-width: 480px){ .proj-board{ grid-template-columns:1fr; } }
+  .proj-col{ display:flex; flex-direction:column; gap:10px; min-width:0; }
+  .proj-col-head{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+  .proj-col-head h3{ font-size:12.5px; margin:0; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft); }
+  .proj-col-count{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
+  .proj-card{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:11px 12px;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+  .proj-card .p-title{ font-size:13.5px; font-weight:600; }
+  .proj-card .p-lab{ font-size:12px; color:var(--muted); font-family:'JetBrains Mono', monospace; }
+  .proj-card.pending{ border-style:dashed; }
+  .proj-card .p-pending-badge{ font-size:10px; color:var(--accent); font-weight:600; letter-spacing:.02em; }
+
+  /* ---- deliverables pane ---- */
+  .proj-group{ display:flex; flex-direction:column; gap:2px; }
+  .proj-group + .proj-group{ margin-top:18px; }
+  .proj-head{ display:flex; align-items:center; gap:10px; padding-bottom:8px; margin-bottom:6px; border-bottom:1px solid var(--border); }
+  .proj-head .chip{ font-size:12px; padding:4px 9px; }
+  .proj-head .proj-remaining{ font-size:12px; color:var(--muted); }
+
+  ul.deliv{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+  ul.deliv li{ display:flex; gap:12px; padding:13px 0; border-bottom:1px solid var(--border); align-items:flex-start; }
+  ul.deliv li:last-child{ border-bottom:none; }
+  ul.deliv li.checked .d-task, ul.deliv li.checked .d-work{ opacity:.45; text-decoration:line-through; text-decoration-color: var(--muted); }
+  .d-check{
+    appearance:none; -webkit-appearance:none;
+    width:19px; height:19px; min-width:19px; margin-top:2px;
+    border:1.5px solid var(--border); border-radius:5px;
+    background:var(--surface-2); cursor:pointer;
+    display:grid; place-content:center;
+  }
+  .d-check:checked{ background:var(--accent); border-color:var(--accent); }
+  .d-check:checked::after{ content:""; width:5px; height:9px; border:solid var(--accent-ink); border-width:0 2px 2px 0; transform:rotate(45deg) translate(-1px,-1px); }
+  .d-check:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .d-body{ display:flex; flex-direction:column; gap:4px; min-width:0; flex:1; }
+  .d-meta{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .status-pill{ font-size:10.5px; font-weight:600; letter-spacing:.02em; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--ink-soft); }
+  .status-pill.good{ color:var(--ok); border-color:var(--ok); background:var(--accent-soft); }
+  .status-pill.blocked{ color:var(--danger); border-color:var(--danger); }
+  .d-date{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
+  .d-task{ font-size:14.5px; line-height:1.45; font-weight:500; }
+  .d-work{ font-size:13.5px; line-height:1.5; color:var(--ink-soft); }
+  .reviewed-toggle{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); cursor:pointer; user-select:none; }
+  .reviewed-toggle input{ accent-color: var(--accent); }
+
+  .start-now-toggle{
+    display:flex; align-items:flex-start; gap:9px;
+    font-size:13px; color:var(--ink-soft); line-height:1.4;
+    cursor:pointer; user-select:none;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:10px 12px;
+  }
+  .start-now-toggle input{ accent-color: var(--accent); margin-top:2px; flex-shrink:0; }
+  .start-now-toggle strong{ color:var(--ink); }
+
+  .priority-tag{ font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:600; border-radius:999px; padding:2px 8px; letter-spacing:.01em; }
+  .priority-tag.top{ color:var(--accent-ink); background:var(--accent); }
+  .priority-tag.low{ color:var(--muted); border:1px solid var(--border); }
+
+  .view[hidden]{ display:none; }
+</style>
+
+<div class="app">
+  <nav class="sidebar" role="tablist">
+    <div class="brand">Bench<br>Queue</div>
+    <button type="button" class="active" id="side-btn-tasks" role="tab" aria-selected="true">
+      <span class="glyph">&#9776;</span><span>Tasks</span>
+    </button>
+    <button type="button" id="side-btn-deliv" role="tab" aria-selected="false">
+      <span class="glyph">&#10003;</span><span>Delivered</span>
+    </button>
+    <button type="button" id="side-btn-projects" role="tab" aria-selected="false">
+      <span class="glyph">&#9638;</span><span>Projects</span>
+    </button>
+  </nav>
+
+  <div class="main">
+    <div class="content-wrap">
+      <header>
+        <span class="eyebrow" id="page-eyebrow">Your Org &middot; lab ops</span>
+        <h1 id="page-title">Task List</h1>
+        <p class="sub" id="page-sub">Everything currently queued for a project, split by priority.</p>
+      </header>
+
+      <!-- ===== TASKS (board) ===== -->
+      <section class="view" id="view-tasks">
+        <div class="card">
+          <div class="pane-head">
+            <h2>Queued tasks</h2>
+            <div class="pane-head-actions">
+              <span class="count-badge" id="board-count"></span>
+              <button type="button" class="add-btn" id="btn-open-addtask" title="Add a task">+</button>
+            </div>
+          </div>
+          <div class="board">
+            <div class="board-col">
+              <div class="board-col-head"><h3>Top Priority</h3><span class="priority-tag top">#top</span></div>
+              <div id="board-top"></div>
+              <p class="empty" id="board-top-empty" hidden>Nothing tagged #top.</p>
+            </div>
+            <div class="board-col">
+              <div class="board-col-head"><h3>Low Priority</h3><span class="priority-tag low">#low</span></div>
+              <div id="board-low"></div>
+              <p class="empty" id="board-low-empty" hidden>Nothing tagged #low.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ADD TASK (secondary, reached via +) ===== -->
+      <section class="view" id="view-addtask" hidden>
+        <button type="button" class="back-link" id="btn-back-from-addtask">&larr; Back to Tasks</button>
+        <div class="card">
+          <form id="task-form">
+            <div class="field">
+              <label for="project-select">Project</label>
+              <select id="project-select"></select>
+            </div>
+
+            <div class="field" id="new-project-field" hidden>
+              <label for="new-project-input">New project name</label>
+              <input type="text" id="new-project-input" placeholder="e.g. STAT_051" autocomplete="off">
+            </div>
+
+            <div class="field">
+              <label for="task-input">Task</label>
+              <textarea id="task-input" placeholder="What should get done?" required></textarea>
+            </div>
+
+            <div class="field">
+              <label for="details-input">Details <span class="hint">(optional — one bullet per line)</span></label>
+              <textarea id="details-input" placeholder="Extra constraints, sub-steps, context..."></textarea>
+            </div>
+
+            <label class="start-now-toggle">
+              <input type="checkbox" id="start-now-input">
+              <span><strong>Sync and start!</strong> <span class="hint">— tags this task <code>#top</code>: the next sync (every ~5 min) starts it immediately. Unchecked tasks are tagged <code>#low</code> — synced into todo.md, but left alone until you say go.</span></span>
+            </label>
+
+            <div class="row">
+              <button type="submit" class="btn primary" id="submit-btn">Submit to queue</button>
+              <span class="status" id="status"></span>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="pane-head">
+            <h2>Recent submissions</h2>
+            <span class="count-badge" id="queue-count"></span>
+          </div>
+          <ul class="list" id="queue-list"></ul>
+          <p class="empty" id="empty-msg" hidden>Nothing submitted yet — the queue starts here.</p>
+        </div>
+      </section>
+
+      <!-- ===== DELIVERABLES ===== -->
+      <section class="view" id="view-deliv" hidden>
+        <div class="card">
+          <div class="pane-head">
+            <h2>Deliverables to review</h2>
+            <label class="reviewed-toggle"><input type="checkbox" id="show-reviewed-toggle"> show reviewed</label>
+          </div>
+          <div class="field" style="margin:2px 0 4px;">
+            <label for="deliv-project-select">Project</label>
+            <select id="deliv-project-select"></select>
+          </div>
+          <p class="hint" style="margin:-8px 0 4px;">Check a box once you've reviewed a deliverable — Claude removes it from <code>todo.md</code> on the next sync.</p>
+          <div id="deliv-groups"></div>
+          <p class="empty" id="deliv-empty" hidden>Nothing left to review.</p>
+        </div>
+      </section>
+
+      <!-- ===== PROJECTS ===== -->
+      <section class="view" id="view-projects" hidden>
+        <div class="card">
+          <div class="pane-head">
+            <h2>Projects</h2>
+            <div class="pane-head-actions">
+              <span class="count-badge" id="proj-count"></span>
+              <button type="button" class="add-btn" id="btn-open-newproj" title="New project">+</button>
+            </div>
+          </div>
+          <div class="proj-board" id="proj-grid"></div>
+        </div>
+      </section>
+
+      <!-- ===== NEW PROJECT (secondary, reached via +) ===== -->
+      <section class="view" id="view-newproj" hidden>
+        <button type="button" class="back-link" id="btn-back-from-newproj">&larr; Back to Projects</button>
+        <div class="card">
+          <form id="newproj-form">
+            <div class="field">
+              <label for="newproj-title">Project Title</label>
+              <input type="text" id="newproj-title" placeholder="e.g. STAT_051" autocomplete="off" required>
+            </div>
+
+            <div class="field">
+              <label for="newproj-lab">Lab</label>
+              <select id="newproj-lab"></select>
+            </div>
+
+            <div class="field" id="newproj-newlab-field" hidden>
+              <label for="newproj-newlab-input">New lab name</label>
+              <input type="text" id="newproj-newlab-input" placeholder="e.g. NewLab" autocomplete="off">
+            </div>
+
+            <div class="field">
+              <label for="newproj-template">Template</label>
+              <select id="newproj-template"></select>
+              <span class="hint">Sourced from your own template directory.</span>
+            </div>
+
+            <div class="field">
+              <label for="newproj-category">Category</label>
+              <select id="newproj-category"></select>
+            </div>
+
+            <div class="row">
+              <button type="submit" class="btn primary" id="newproj-submit-btn">Submit request</button>
+              <span class="status" id="newproj-status"></span>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="pane-head">
+            <h2>Recent project requests</h2>
+            <span class="count-badge" id="newproj-count"></span>
+          </div>
+          <ul class="list" id="newproj-list"></ul>
+          <p class="empty" id="newproj-empty" hidden>No project requests yet.</p>
+        </div>
+      </section>
+
+      <footer style="font-size:12px;color:var(--muted);text-align:center;">Stored on this artifact until Claude's next sync pass into the repo.</footer>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ============================================================================
+  // BENCH QUEUE — CONFIG BLOCK
+  // Edit everything in this block to match your own repo before publishing.
+  // See SETUP.md in this kit for the full walkthrough. Nothing outside this
+  // block should need to change for a typical setup.
+  // ============================================================================
+
+  // One entry per project/repo you track in your todo.md's "## <Project>" headers.
+  var PROJECTS = [
+    "ExampleProject_A", "ExampleProject_B", "ExampleProject_C"
+  ];
+
+  // Project -> lab/team, matching each project's "**Lab: X**" line in todo.md.
+  var PROJECT_LAB = {
+    "ExampleProject_A": "TeamAlpha",
+    "ExampleProject_B": "TeamBeta",
+    "ExampleProject_C": "TeamAlpha"
+  };
+
+  // Every distinct lab/team name — populates the "Lab" dropdown on New Project.
+  var LABS = ["TeamAlpha", "TeamBeta"];
+
+  // Folder names under your own template directory (e.g. C_Templates/) —
+  // populates the "Template" dropdown on New Project.
+  var TEMPLATES = ["GeneralTemplate"];
+  var DEFAULT_TEMPLATE = "GeneralTemplate";
+
+  // ---- project tags ----
+  // Categories shown as columns on the Projects board, and how a project/new
+  // request gets sorted into one. Customize tagForProject()'s rules freely —
+  // this example buckets by name prefix, then falls back to a lab check, then
+  // a catch-all. Keep it deterministic: same (name, lab) in -> same tag out.
+  var CATEGORIES = [
+    { key: "core", label: "Core Projects" },
+    { key: "internal", label: "Internal" },
+    { key: "other", label: "Other" }
+  ];
+  function tagForProject(name, lab){
+    if(/^ExampleProject_/.test(name)) return "core";
+    if(lab === "TeamAlpha") return "internal";
+    return "other";
+  }
+  var PROJECT_TAG = {};
+  PROJECTS.forEach(function(p){ PROJECT_TAG[p] = tagForProject(p, PROJECT_LAB[p]); });
+
+  // ---- project select (Add Task form) ----
+  var select = document.getElementById('project-select');
+  PROJECTS.forEach(function(p){
+    var opt = document.createElement('option');
+    opt.value = p; opt.textContent = p;
+    select.appendChild(opt);
+  });
+  var newOpt = document.createElement('option');
+  newOpt.value = '__new__'; newOpt.textContent = '+ New project…';
+  select.appendChild(newOpt);
+
+  var newField = document.getElementById('new-project-field');
+  var newInput = document.getElementById('new-project-input');
+  select.addEventListener('change', function(){
+    newField.hidden = select.value !== '__new__';
+  });
+
+  var form = document.getElementById('task-form');
+  var taskInput = document.getElementById('task-input');
+  var detailsInput = document.getElementById('details-input');
+  var submitBtn = document.getElementById('submit-btn');
+  var statusEl = document.getElementById('status');
+  var queueList = document.getElementById('queue-list');
+  var queueCount = document.getElementById('queue-count');
+  var emptyMsg = document.getElementById('empty-msg');
+  var startNowInput = document.getElementById('start-now-input');
+
+  // ---- sidebar / pane navigation ----
+  var SIDE_BTNS = {
+    tasks: document.getElementById('side-btn-tasks'),
+    deliv: document.getElementById('side-btn-deliv'),
+    projects: document.getElementById('side-btn-projects')
+  };
+  var VIEWS = {
+    tasks: document.getElementById('view-tasks'),
+    addtask: document.getElementById('view-addtask'),
+    deliv: document.getElementById('view-deliv'),
+    projects: document.getElementById('view-projects'),
+    newproj: document.getElementById('view-newproj')
+  };
+  var PAGE_META = {
+    tasks: { eyebrow:'Your Org · lab ops', title:'Task List', sub:'Everything currently queued for a project, split by priority.' },
+    addtask: { eyebrow:'Your Org · lab ops', title:'Add a Task', sub:'Pick a project, describe the task. It lands in the queue — Claude reviews it and merges it into <code>todo.md</code> on the next sync.' },
+    deliv: { eyebrow:'Your Org · lab ops', title:'Deliverables', sub:'Everything Claude has marked done, waiting on your sign-off. Check it off once reviewed.' },
+    projects: { eyebrow:'Your Org · lab ops', title:'Projects', sub:'Every tracked project, and any new ones requested but not yet scaffolded.' },
+    newproj: { eyebrow:'Your Org · lab ops', title:'New Project', sub:'Request a brand-new project scaffold — title, lab, and a starting template.' }
+  };
+  var pageEyebrow = document.getElementById('page-eyebrow');
+  var pageTitle = document.getElementById('page-title');
+  var pageSub = document.getElementById('page-sub');
+
+  function showView(name){
+    Object.keys(VIEWS).forEach(function(key){ VIEWS[key].hidden = key !== name; });
+    var sideKey = (name === 'addtask') ? 'tasks' : (name === 'newproj') ? 'projects' : name;
+    Object.keys(SIDE_BTNS).forEach(function(key){
+      var active = key === sideKey;
+      SIDE_BTNS[key].classList.toggle('active', active);
+      SIDE_BTNS[key].setAttribute('aria-selected', active);
+    });
+    var meta = PAGE_META[name];
+    pageEyebrow.textContent = meta.eyebrow;
+    pageTitle.textContent = meta.title;
+    pageSub.innerHTML = meta.sub;
+    window.scrollTo(0,0);
+  }
+  SIDE_BTNS.tasks.addEventListener('click', function(){ showView('tasks'); });
+  SIDE_BTNS.deliv.addEventListener('click', function(){ showView('deliv'); });
+  SIDE_BTNS.projects.addEventListener('click', function(){ showView('projects'); });
+  document.getElementById('btn-open-addtask').addEventListener('click', function(){ showView('addtask'); });
+  document.getElementById('btn-back-from-addtask').addEventListener('click', function(){ showView('tasks'); });
+  document.getElementById('btn-open-newproj').addEventListener('click', function(){ showView('newproj'); });
+  document.getElementById('btn-back-from-newproj').addEventListener('click', function(){ showView('projects'); });
+
+  var db = null;
+  claude.use && claude.use('db').then(function(ns){
+    db = ns;
+    if(db){ subscribe(); subscribeDeliverables(); subscribeNewProjects(); }
+  }).catch(function(){});
+
+  function fmtTime(iso){
+    try{
+      var d = new Date(iso);
+      return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}) + ' ' +
+             d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+    }catch(e){ return ''; }
+  }
+
+  // ---- task queue: flat "recent submissions" list (Add Task pane) ----
+  function render(docs){
+    queueList.innerHTML = '';
+    queueCount.textContent = docs.length ? (docs.length + (docs.length===1?' entry':' entries')) : '';
+    emptyMsg.hidden = docs.length !== 0;
+    docs.forEach(function(snap){
+      var d = snap.data();
+      if(!d) return;
+      var li = document.createElement('li');
+
+      var meta = document.createElement('div');
+      meta.className = 'meta';
+      var chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = d.project || '—';
+      var time = document.createElement('span');
+      time.className = 'time';
+      time.textContent = fmtTime(d.createdAt);
+      var pending = document.createElement('span');
+      pending.className = 'pending';
+      pending.textContent = d.synced ? 'synced' : 'pending sync';
+      meta.appendChild(chip); meta.appendChild(time); meta.appendChild(pending);
+      var tag = document.createElement('span');
+      tag.className = 'priority-tag ' + (d.priority === 'top' ? 'top' : 'low');
+      tag.textContent = d.priority === 'top' ? '#top' : '#low';
+      meta.appendChild(tag);
+
+      var task = document.createElement('div');
+      task.className = 'task-text';
+      task.textContent = d.task || '';
+
+      li.appendChild(meta);
+      li.appendChild(task);
+
+      if(d.details){
+        var det = document.createElement('div');
+        det.className = 'details-text';
+        det.textContent = d.details;
+        li.appendChild(det);
+      }
+      queueList.appendChild(li);
+    });
+  }
+
+  // ---- task board: two columns by priority (Tasks pane) ----
+  var boardTop = document.getElementById('board-top');
+  var boardLow = document.getElementById('board-low');
+  var boardTopEmpty = document.getElementById('board-top-empty');
+  var boardLowEmpty = document.getElementById('board-low-empty');
+  var boardCount = document.getElementById('board-count');
+
+  function boardCard(d){
+    var card = document.createElement('div');
+    card.className = 'board-card';
+
+    var meta = document.createElement('div');
+    meta.className = 'meta';
+    var chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.textContent = d.project || '—';
+    var pending = document.createElement('span');
+    pending.className = 'pending';
+    pending.textContent = d.synced ? 'synced' : 'pending sync';
+    meta.appendChild(chip); meta.appendChild(pending);
+
+    var task = document.createElement('div');
+    task.className = 'task-text';
+    task.textContent = d.task || '';
+
+    var time = document.createElement('span');
+    time.className = 'time';
+    time.textContent = fmtTime(d.createdAt);
+
+    card.appendChild(meta);
+    card.appendChild(task);
+    card.appendChild(time);
+    return card;
+  }
+
+  function renderBoard(docs){
+    boardTop.innerHTML = ''; boardLow.innerHTML = '';
+    var tops = [], lows = [];
+    docs.forEach(function(snap){
+      var d = snap.data();
+      if(!d) return;
+      (d.priority === 'top' ? tops : lows).push(d);
+    });
+    tops.forEach(function(d){ boardTop.appendChild(boardCard(d)); });
+    lows.forEach(function(d){ boardLow.appendChild(boardCard(d)); });
+    boardTopEmpty.hidden = tops.length !== 0;
+    boardLowEmpty.hidden = lows.length !== 0;
+    boardCount.textContent = docs.length ? (docs.length + (docs.length===1?' task':' tasks')) : '';
+  }
+
+  function subscribe(){
+    db.collection('submissions').orderBy('createdAt','desc').limit(50).onSnapshot(
+      function(snap){ render(snap.docs); renderBoard(snap.docs); },
+      function(err){ /* degrade silently, form still works */ }
+    );
+  }
+
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var project = select.value === '__new__' ? newInput.value.trim() : select.value;
+    var task = taskInput.value.trim();
+    var details = detailsInput.value.trim();
+
+    if(!project){ statusEl.textContent = 'Pick or name a project first.'; statusEl.className='status err'; return; }
+    if(!task){ statusEl.textContent = 'Describe the task first.'; statusEl.className='status err'; return; }
+
+    if(!db){
+      statusEl.textContent = 'Queue storage is unavailable in this view right now.';
+      statusEl.className = 'status err';
+      return;
+    }
+
+    var priority = startNowInput.checked ? 'top' : 'low';
+
+    submitBtn.disabled = true;
+    statusEl.textContent = 'Submitting…';
+    statusEl.className = 'status';
+
+    db.collection('submissions').add({
+      project: project,
+      task: task,
+      details: details,
+      createdAt: new Date().toISOString(),
+      synced: false,
+      priority: priority
+    }).then(function(){
+      statusEl.textContent = priority === 'top' ? 'Added — tagged #top, starts on next sync.' : 'Added to the queue as #low.';
+      statusEl.className = 'status ok';
+      taskInput.value = '';
+      detailsInput.value = '';
+      startNowInput.checked = false;
+      if(select.value === '__new__'){ newInput.value=''; }
+      submitBtn.disabled = false;
+    }).catch(function(err){
+      statusEl.textContent = 'Could not submit — try again.';
+      statusEl.className = 'status err';
+      submitBtn.disabled = false;
+    });
+  });
+
+  // ---- deliverables ----
+  var delivProjectSelect = document.getElementById('deliv-project-select');
+  var allProjectsOpt = document.createElement('option');
+  allProjectsOpt.value = '__all__'; allProjectsOpt.textContent = 'All projects';
+  delivProjectSelect.appendChild(allProjectsOpt);
+  PROJECTS.forEach(function(p){
+    var opt = document.createElement('option');
+    opt.value = p; opt.textContent = p;
+    delivProjectSelect.appendChild(opt);
+  });
+  delivProjectSelect.addEventListener('change', renderDeliverables);
+
+  var delivGroups = document.getElementById('deliv-groups');
+  var delivEmpty = document.getElementById('deliv-empty');
+  var showReviewedToggle = document.getElementById('show-reviewed-toggle');
+  var delivSubscribed = false;
+  var lastDelivDocs = [];
+
+  function statusClass(status){
+    status = (status || '').toLowerCase();
+    if(status.indexOf('blocked') !== -1) return 'blocked';
+    if(status.indexOf('built') !== -1 || status.indexOf('verified') !== -1 || status.indexOf('confirmed') !== -1) return 'good';
+    return '';
+  }
+
+  function renderDeliverables(){
+    var showReviewed = showReviewedToggle.checked;
+    var projectFilter = delivProjectSelect.value;
+    var docs = lastDelivDocs.filter(function(snap){
+      var d = snap.data();
+      if(!d) return false;
+      if(!(showReviewed || !d.reviewed)) return false;
+      if(projectFilter !== '__all__' && d.project !== projectFilter) return false;
+      return true;
+    });
+
+    delivGroups.innerHTML = '';
+    delivEmpty.hidden = docs.length !== 0;
+
+    var byProject = {};
+    var order = [];
+    docs.forEach(function(snap){
+      var d = snap.data();
+      if(!byProject[d.project]){ byProject[d.project] = []; order.push(d.project); }
+      byProject[d.project].push(snap);
+    });
+
+    order.forEach(function(project){
+      var items = byProject[project];
+      var group = document.createElement('div');
+      group.className = 'proj-group';
+
+      var head = document.createElement('div');
+      head.className = 'proj-head';
+      var chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = project;
+      var remaining = document.createElement('span');
+      remaining.className = 'proj-remaining';
+      var unreviewed = items.filter(function(s){ return !s.data().reviewed; }).length;
+      remaining.textContent = unreviewed + ' to review';
+      head.appendChild(chip); head.appendChild(remaining);
+      group.appendChild(head);
+
+      var ul = document.createElement('ul');
+      ul.className = 'deliv';
+
+      items.forEach(function(snap){
+        var d = snap.data();
+        var li = document.createElement('li');
+        if(d.reviewed) li.className = 'checked';
+
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'd-check';
+        cb.checked = !!d.reviewed;
+        cb.id = 'chk-' + snap.id;
+        cb.addEventListener('change', function(){
+          if(!db) return;
+          cb.disabled = true;
+          db.collection('deliverables').doc(snap.id).update({
+            reviewed: cb.checked,
+            reviewedAt: cb.checked ? new Date().toISOString() : null
+          }).catch(function(){ cb.checked = !cb.checked; }).finally(function(){ cb.disabled = false; });
+        });
+
+        var body = document.createElement('label');
+        body.className = 'd-body';
+        body.setAttribute('for', cb.id);
+
+        var meta = document.createElement('div');
+        meta.className = 'd-meta';
+        var pill = document.createElement('span');
+        pill.className = 'status-pill ' + statusClass(d.status);
+        pill.textContent = d.status || '';
+        var date = document.createElement('span');
+        date.className = 'd-date';
+        date.textContent = d.date || '';
+        meta.appendChild(pill); meta.appendChild(date);
+
+        var task = document.createElement('div');
+        task.className = 'd-task';
+        task.textContent = d.task || '';
+
+        var work = document.createElement('div');
+        work.className = 'd-work';
+        work.textContent = d.work_done || '';
+
+        body.appendChild(meta);
+        body.appendChild(task);
+        body.appendChild(work);
+
+        li.appendChild(cb);
+        li.appendChild(body);
+        ul.appendChild(li);
+      });
+
+      group.appendChild(ul);
+      delivGroups.appendChild(group);
+    });
+  }
+
+  function subscribeDeliverables(){
+    if(delivSubscribed || !db) return;
+    delivSubscribed = true;
+    db.collection('deliverables').orderBy('date', 'desc').limit(500).onSnapshot(
+      function(snap){ lastDelivDocs = snap.docs; renderDeliverables(); },
+      function(err){ /* degrade silently */ }
+    );
+  }
+  showReviewedToggle.addEventListener('change', renderDeliverables);
+
+  // ---- new project form ----
+  var templateSelect = document.getElementById('newproj-template');
+  TEMPLATES.forEach(function(t){
+    var opt = document.createElement('option');
+    opt.value = t; opt.textContent = t;
+    if(t === DEFAULT_TEMPLATE){ opt.selected = true; }
+    templateSelect.appendChild(opt);
+  });
+
+  var labSelect = document.getElementById('newproj-lab');
+  LABS.forEach(function(l){
+    var opt = document.createElement('option');
+    opt.value = l; opt.textContent = l;
+    labSelect.appendChild(opt);
+  });
+  var addNewLabOpt = document.createElement('option');
+  addNewLabOpt.value = '__new__'; addNewLabOpt.textContent = 'Add new…';
+  labSelect.appendChild(addNewLabOpt);
+
+  var newLabField = document.getElementById('newproj-newlab-field');
+  var newLabInput = document.getElementById('newproj-newlab-input');
+  labSelect.addEventListener('change', function(){
+    newLabField.hidden = labSelect.value !== '__new__';
+  });
+
+  var categorySelect = document.getElementById('newproj-category');
+  CATEGORIES.forEach(function(c){
+    var opt = document.createElement('option');
+    opt.value = c.key; opt.textContent = c.label + ' (#' + c.key + ')';
+    categorySelect.appendChild(opt);
+  });
+
+  var newprojForm = document.getElementById('newproj-form');
+  var titleInput = document.getElementById('newproj-title');
+  var newprojSubmitBtn = document.getElementById('newproj-submit-btn');
+  var newprojStatus = document.getElementById('newproj-status');
+  var newprojList = document.getElementById('newproj-list');
+  var newprojCount = document.getElementById('newproj-count');
+  var newprojEmpty = document.getElementById('newproj-empty');
+
+  function renderNewProjects(docs){
+    newprojList.innerHTML = '';
+    newprojCount.textContent = docs.length ? (docs.length + (docs.length===1?' entry':' entries')) : '';
+    newprojEmpty.hidden = docs.length !== 0;
+    docs.forEach(function(snap){
+      var d = snap.data();
+      if(!d) return;
+      var li = document.createElement('li');
+
+      var meta = document.createElement('div');
+      meta.className = 'meta';
+      var chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = d.title || '—';
+      var lab = document.createElement('span');
+      lab.className = 'time';
+      lab.textContent = d.lab || '';
+      var tmpl = document.createElement('span');
+      tmpl.className = 'priority-tag low';
+      tmpl.textContent = d.template || '';
+      var pending = document.createElement('span');
+      pending.className = 'pending';
+      pending.textContent = d.synced ? 'scaffolded' : 'pending';
+      meta.appendChild(chip); meta.appendChild(lab); meta.appendChild(tmpl); meta.appendChild(pending);
+
+      var time = document.createElement('div');
+      time.className = 'details-text';
+      time.textContent = fmtTime(d.createdAt);
+
+      li.appendChild(meta);
+      li.appendChild(time);
+      newprojList.appendChild(li);
+    });
+    renderProjectsGrid();
+  }
+
+  var lastNewProjDocs = [];
+  function subscribeNewProjects(){
+    db.collection('new_projects').orderBy('createdAt', 'desc').limit(30).onSnapshot(
+      function(snap){ lastNewProjDocs = snap.docs; renderNewProjects(snap.docs); },
+      function(err){ /* degrade silently */ }
+    );
+  }
+
+  function findDuplicateProject(title){
+    var norm = title.trim().toLowerCase();
+    for(var i = 0; i < lastNewProjDocs.length; i++){
+      var d = lastNewProjDocs[i].data();
+      if(d && d.title && d.title.trim().toLowerCase() === norm) return d;
+    }
+    return null;
+  }
+
+  newprojForm.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var title = titleInput.value.trim();
+    var lab = labSelect.value === '__new__' ? newLabInput.value.trim() : labSelect.value;
+    var template = templateSelect.value;
+    var category = categorySelect.value;
+
+    if(!title){ newprojStatus.textContent = 'Give the project a title first.'; newprojStatus.className = 'status err'; return; }
+    if(!lab){ newprojStatus.textContent = 'Give the lab first.'; newprojStatus.className = 'status err'; return; }
+
+    var dup = findDuplicateProject(title);
+    if(dup){
+      newprojStatus.textContent = 'A request titled "' + dup.title + '" already exists (' + (dup.synced ? 'scaffolded' : 'pending') + ') — pick a different title if this is genuinely a new project.';
+      newprojStatus.className = 'status err';
+      return;
+    }
+    if(PROJECT_LAB.hasOwnProperty(title)){
+      newprojStatus.textContent = '"' + title + '" already exists as a project.';
+      newprojStatus.className = 'status err';
+      return;
+    }
+
+    if(!db){
+      newprojStatus.textContent = 'Storage is unavailable in this view right now.';
+      newprojStatus.className = 'status err';
+      return;
+    }
+
+    newprojSubmitBtn.disabled = true;
+    newprojStatus.textContent = 'Submitting…';
+    newprojStatus.className = 'status';
+
+    db.collection('new_projects').add({
+      title: title,
+      lab: lab,
+      template: template,
+      category: category,
+      createdAt: new Date().toISOString(),
+      synced: false
+    }).then(function(){
+      newprojStatus.textContent = 'Request added.';
+      newprojStatus.className = 'status ok';
+      titleInput.value = '';
+      if(labSelect.value === '__new__'){ newLabInput.value = ''; }
+      newprojSubmitBtn.disabled = false;
+    }).catch(function(err){
+      newprojStatus.textContent = 'Could not submit — try again.';
+      newprojStatus.className = 'status err';
+      newprojSubmitBtn.disabled = false;
+    });
+  });
+
+  // ---- projects pane (grid of existing + pending) ----
+  var projGrid = document.getElementById('proj-grid');
+  var projCount = document.getElementById('proj-count');
+
+  function makeProjCard(title, lab, pendingInfo){
+    var card = document.createElement('div');
+    card.className = 'proj-card' + (pendingInfo ? ' pending' : '');
+    if(pendingInfo){
+      var badge = document.createElement('div');
+      badge.className = 'p-pending-badge';
+      badge.textContent = 'PENDING · ' + pendingInfo;
+      card.appendChild(badge);
+    }
+    var t = document.createElement('div');
+    t.className = 'p-title';
+    t.textContent = title;
+    var l = document.createElement('div');
+    l.className = 'p-lab';
+    l.textContent = lab || '';
+    card.appendChild(t); card.appendChild(l);
+    return card;
+  }
+
+  function renderProjectsGrid(){
+    projGrid.innerHTML = '';
+
+    var byTag = { agendo: [], ether: [], msc: [], self: [] };
+    PROJECTS.forEach(function(p){
+      byTag[PROJECT_TAG[p]].push({ title: p, lab: PROJECT_LAB[p] });
+    });
+    var pendingCount = 0;
+    lastNewProjDocs.forEach(function(snap){
+      var d = snap.data();
+      if(!d || d.synced) return; // scaffolded ones fold into the real PROJECTS list once created
+      var tag = byTag.hasOwnProperty(d.category) ? d.category : tagForProject(d.title || '', d.lab);
+      byTag[tag].push({ title: d.title, lab: d.lab, pending: d.template || '' });
+      pendingCount++;
+    });
+
+    CATEGORIES.forEach(function(cat){
+      var col = document.createElement('div');
+      col.className = 'proj-col';
+
+      var head = document.createElement('div');
+      head.className = 'proj-col-head';
+      var h3 = document.createElement('h3');
+      h3.textContent = cat.label;
+      var tag = document.createElement('span');
+      tag.className = 'priority-tag low';
+      tag.textContent = '#' + cat.key;
+      var count = document.createElement('span');
+      count.className = 'proj-col-count';
+      count.textContent = byTag[cat.key].length;
+      head.appendChild(h3); head.appendChild(tag); head.appendChild(count);
+      col.appendChild(head);
+
+      byTag[cat.key].forEach(function(item){
+        col.appendChild(makeProjCard(item.title, item.lab, item.pending));
+      });
+
+      projGrid.appendChild(col);
+    });
+
+    projCount.textContent = (PROJECTS.length + pendingCount) + ' projects';
+  }
+  renderProjectsGrid();
+})();
+</script>

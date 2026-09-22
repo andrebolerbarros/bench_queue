@@ -1,0 +1,27 @@
+Bench Queue sync tick (sync-only, no autonomous execution). Artifact URL: {{ARTIFACT_URL}}. Bench Queue is a pure inbox — {{TODO_PATH}} / your git repo is the sole canonical record, so once something is merged it should be DELETED from the artifact DB, not just marked synced (avoids two systems drifting).
+
+PART A — task submissions:
+1. ArtifactData action "query" on collection "submissions", where [["synced","eq",false]]. If none, skip to Part B.
+2. For each: read {{TODO_PATH}}, find "## <project>" (create a new project section at the end, matching existing format, if missing), add the task as a new "#### <short title>" block under "### Task List" (task as **Task:**, details as sub-bullets). Immediately after the task block, add an HTML comment `<!-- bench:<doc_id> -->` (the submission's doc id) so the entry is traceable back to its Bench Queue submission. Do NOT start working the task regardless of priority.
+3. After merging, DELETE the submission doc (ArtifactData action "delete", pinned with if_version) instead of marking synced.
+4. Commit with a message listing each merged doc_id (e.g. "Sync Bench Queue: <project>/<doc_id>, ..."){{GIT_ATTRIBUTION}}, and push {{TODO_PATH}} to {{REPO_PATH}}.
+5. If any merged submission had priority=="top", message the user flagging it by project/task text, ready to start on request — do not start it. Stay silent if only #low synced or nothing changed.
+
+PART B — project list reconciliation (do this part every tick, cheap check; delete this whole part if you'd rather manage PROJECTS/PROJECT_LAB by hand):
+1. Read {{TODO_PATH}} and extract the current list of "## <project>" names and each one's "**Lab: X**" value.
+2. Read the live artifact (Artifact action "read") and compare its baked-in PROJECTS/PROJECT_LAB arrays (in the <script> block, inside the "BENCH QUEUE — CONFIG BLOCK" section) against todo.md's real list.
+3. If they differ (a project added, removed, or relabeled since the artifact was last published), regenerate those two JS arrays to match {{TODO_PATH}} exactly and republish the artifact (Artifact action "publish" with the same url, same file path pattern used to publish it originally) preserving everything else in the file unchanged. Recompute PROJECT_TAG for any changed/added projects using the existing tagForProject() rules already in the file.
+4. Only mention this to the user if you actually had to republish (i.e. the lists were out of sync) — otherwise stay silent about Part B.
+
+If nothing changed in either part, stay completely silent (no message).
+
+---
+Placeholders to fill in before use:
+  {{ARTIFACT_URL}}     e.g. https://claude.ai/artifact/xxxxxxxxxxxxxxxxxxxxxxxx
+  {{TODO_PATH}}        e.g. /home/you/myrepo/todo.md
+  {{REPO_PATH}}        e.g. ~/myrepo  (wherever this gets committed/pushed from)
+  {{GIT_ATTRIBUTION}}  e.g. ", using the same git attribution footer used all session"
+                       (or delete this placeholder and its comma if you don't want one)
+
+Schedule this with CronCreate, e.g. cron: "2-59/5 * * * *" (every ~5 min, offset
+off the exact 5-minute marks — see CronCreate's own guidance on why).
