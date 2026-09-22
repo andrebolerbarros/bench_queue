@@ -70,6 +70,10 @@ talks to the original deployment.
    - `LABS` — the distinct list of labs/teams (populates the Lab dropdown).
    - `TEMPLATES` / `DEFAULT_TEMPLATE` — your own project-scaffold template
      names, if you have any; otherwise leave one generic entry.
+   - `SKILLS` / `AGENTS` — names that autocomplete in the Add Task form's
+     optional Skill/Agent fields (a submitter can still type anything else;
+     these are just suggestions). Match your own `.claude/skills/` folder
+     and configured subagent types.
    - `CATEGORIES` and `tagForProject()` — the tag columns shown on the
      Projects board, and the rule that sorts a project into one. The shipped
      example buckets by name prefix then lab; replace with whatever

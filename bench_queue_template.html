@@ -385,11 +385,13 @@
             <div class="row" style="align-items:stretch;">
               <div class="field" style="flex:1; min-width:140px;">
                 <label for="skill-input">Skill <span class="hint">(optional)</span></label>
-                <input type="text" id="skill-input" placeholder="e.g. updatelog" autocomplete="off">
+                <input type="text" id="skill-input" placeholder="e.g. your-skill-1" autocomplete="off" list="skill-options">
+                <datalist id="skill-options"></datalist>
               </div>
               <div class="field" style="flex:1; min-width:140px;">
                 <label for="agent-input">Agent <span class="hint">(optional)</span></label>
-                <input type="text" id="agent-input" placeholder="e.g. code-reviewer" autocomplete="off">
+                <input type="text" id="agent-input" placeholder="e.g. code-reviewer" autocomplete="off" list="agent-options">
+                <datalist id="agent-options"></datalist>
               </div>
             </div>
 
@@ -523,6 +525,13 @@
   // Every distinct lab/team name — populates the "Lab" dropdown on New Project.
   var LABS = ["TeamAlpha", "TeamBeta"];
 
+  // Known Claude Code skills/agents — populates the Skill/Agent autocomplete
+  // suggestions on Add Task. Free text is still accepted; these are just hints.
+  // Replace with your own project's actual skill/agent names (e.g. from
+  // .claude/skills/ and your configured subagent types).
+  var SKILLS = ["your-skill-1", "your-skill-2"];
+  var AGENTS = ["general-purpose", "Explore", "Plan"];
+
   // Folder names under your own template directory (e.g. C_Templates/) —
   // populates the "Template" dropdown on New Project.
   var TEMPLATES = ["GeneralTemplate"];
@@ -568,6 +577,18 @@
   var detailsInput = document.getElementById('details-input');
   var skillInput = document.getElementById('skill-input');
   var agentInput = document.getElementById('agent-input');
+  var skillOptions = document.getElementById('skill-options');
+  var agentOptions = document.getElementById('agent-options');
+  SKILLS.forEach(function(s){
+    var opt = document.createElement('option');
+    opt.value = s;
+    skillOptions.appendChild(opt);
+  });
+  AGENTS.forEach(function(a){
+    var opt = document.createElement('option');
+    opt.value = a;
+    agentOptions.appendChild(opt);
+  });
   var submitBtn = document.getElementById('submit-btn');
   var statusEl = document.getElementById('status');
   var queueList = document.getElementById('queue-list');
