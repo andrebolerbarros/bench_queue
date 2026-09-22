@@ -382,6 +382,17 @@
               <textarea id="details-input" placeholder="Extra constraints, sub-steps, context..."></textarea>
             </div>
 
+            <div class="row" style="align-items:stretch;">
+              <div class="field" style="flex:1; min-width:140px;">
+                <label for="skill-input">Skill <span class="hint">(optional)</span></label>
+                <input type="text" id="skill-input" placeholder="e.g. updatelog" autocomplete="off">
+              </div>
+              <div class="field" style="flex:1; min-width:140px;">
+                <label for="agent-input">Agent <span class="hint">(optional)</span></label>
+                <input type="text" id="agent-input" placeholder="e.g. code-reviewer" autocomplete="off">
+              </div>
+            </div>
+
             <label class="start-now-toggle">
               <input type="checkbox" id="start-now-input">
               <span><strong>Sync and start!</strong> <span class="hint">— tags this task <code>#top</code>: the next sync (every ~5 min) starts it immediately. Unchecked tasks are tagged <code>#low</code> — synced into todo.md, but left alone until you say go.</span></span>
@@ -555,6 +566,8 @@
   var form = document.getElementById('task-form');
   var taskInput = document.getElementById('task-input');
   var detailsInput = document.getElementById('details-input');
+  var skillInput = document.getElementById('skill-input');
+  var agentInput = document.getElementById('agent-input');
   var submitBtn = document.getElementById('submit-btn');
   var statusEl = document.getElementById('status');
   var queueList = document.getElementById('queue-list');
@@ -623,6 +636,23 @@
   }
 
   // ---- task queue: flat "recent submissions" list (Add Task pane) ----
+  function skillAgentTags(d){
+    var frag = document.createDocumentFragment();
+    if(d.skill){
+      var s = document.createElement('span');
+      s.className = 'chip';
+      s.textContent = 'skill: ' + d.skill;
+      frag.appendChild(s);
+    }
+    if(d.agent){
+      var a = document.createElement('span');
+      a.className = 'chip';
+      a.textContent = 'agent: ' + d.agent;
+      frag.appendChild(a);
+    }
+    return frag;
+  }
+
   function render(docs){
     queueList.innerHTML = '';
     queueCount.textContent = docs.length ? (docs.length + (docs.length===1?' entry':' entries')) : '';
@@ -648,6 +678,7 @@
       tag.className = 'priority-tag ' + (d.priority === 'top' ? 'top' : 'low');
       tag.textContent = d.priority === 'top' ? '#top' : '#low';
       meta.appendChild(tag);
+      meta.appendChild(skillAgentTags(d));
 
       var task = document.createElement('div');
       task.className = 'task-text';
@@ -686,6 +717,7 @@
     pending.className = 'pending';
     pending.textContent = d.synced ? 'synced' : 'pending sync';
     meta.appendChild(chip); meta.appendChild(pending);
+    meta.appendChild(skillAgentTags(d));
 
     var task = document.createElement('div');
     task.className = 'task-text';
@@ -728,6 +760,8 @@
     var project = select.value === '__new__' ? newInput.value.trim() : select.value;
     var task = taskInput.value.trim();
     var details = detailsInput.value.trim();
+    var skill = skillInput.value.trim();
+    var agent = agentInput.value.trim();
 
     if(!project){ statusEl.textContent = 'Pick or name a project first.'; statusEl.className='status err'; return; }
     if(!task){ statusEl.textContent = 'Describe the task first.'; statusEl.className='status err'; return; }
@@ -748,6 +782,8 @@
       project: project,
       task: task,
       details: details,
+      skill: skill,
+      agent: agent,
       createdAt: new Date().toISOString(),
       synced: false,
       priority: priority
@@ -756,6 +792,8 @@
       statusEl.className = 'status ok';
       taskInput.value = '';
       detailsInput.value = '';
+      skillInput.value = '';
+      agentInput.value = '';
       startNowInput.checked = false;
       if(select.value === '__new__'){ newInput.value=''; }
       submitBtn.disabled = false;
